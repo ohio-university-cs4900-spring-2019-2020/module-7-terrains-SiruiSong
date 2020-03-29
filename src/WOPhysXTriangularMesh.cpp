@@ -122,19 +122,19 @@ void WOPhysXTriangularMesh::createGrid() {
 	WO* grid = WOGridECEFElevation::New(upperLeft, lowerRight, 0, offset, scale, elevation);
 	grid->setLabel("grid");
 
-	VectorD ll = ((upperLeft + lowerRight) / 2.0);
-	ll.z = 0.0;
-	VectorD zdir = ll.toECEFfromWGS84().normalizeMe();
-	VectorD northPoleECEF = VectorD(100.0, 0.0, 0.0).toECEFfromWGS84();
-	VectorD xdir = northPoleECEF - ll.toECEFfromWGS84();
-	xdir = xdir.vectorProjectOnToPlane(zdir);
-	xdir.normalize();
-	VectorD ydir = zdir.crossProduct(xdir);
-	ydir.normalize();
+	VectorD v = ((upperLeft + lowerRight) / 2.0);
+	//VectorD v = (upperLeft, lowerRight, 0.0);
+	VectorD zAxis = v.toECEFfromWGS84();
+	zAxis.normalize();
+	VectorD xAxis = (VectorD(1.0, 1.0, 0.0).toECEFfromWGS84() - v.toECEFfromWGS84()).vectorProjectOnToPlane(zAxis);
+	//xAxis = xAxis.vectorProjectOnToPlane(zAxis);
+	xAxis.normalize();
+	VectorD yAxis = zAxis.crossProduct(xAxis);
+	yAxis.normalize();
 	float mat[16] = {
-		xdir.x, xdir.y, xdir.z, 0.0f,
-		ydir.x, ydir.y, ydir.z, 0.0f,
-		zdir.x, zdir.y, zdir.z, 0.0f,
+		xAxis.x, xAxis.y, xAxis.z, 0.0f,
+		yAxis.x, yAxis.y, yAxis.z, 0.0f,
+		zAxis.x, zAxis.y, zAxis.z, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	};
 	grid->getModel()->setDisplayMatrix(Mat4(mat).transposeUpperLeft3x3());
